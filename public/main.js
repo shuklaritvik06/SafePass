@@ -4,6 +4,7 @@ const path = require("path");
 const Cryptr = require("cryptr");
 const sqlite = require("sqlite3").verbose();
 const isDev = require("electron-is-dev");
+const { homedir } = require("os");
 
 require("@electron/remote/main").initialize();
 
@@ -20,7 +21,6 @@ function createWindow() {
       contextIsolation: false
     }
   });
-  win.webContents.openDevTools();
   win.loadURL(
     isDev
       ? "http://localhost:3000"
@@ -45,7 +45,7 @@ app.on("ready", () => {
   setTimeout(() => {
     splash.close();
     win.show();
-  }, 5000);
+  }, 4000);
 });
 
 app.on("window-all-closed", function () {
@@ -60,22 +60,23 @@ app.on("activate", function () {
 
 ipcMain.handle("createUser", (event, args) => {
   try {
-    if (!fs.existsSync("./public/User.txt")) {
-      fs.writeFileSync("./public/User.txt", args);
+    if (!fs.existsSync("./User.txt")) {
+      fs.writeFileSync("./User.txt", args);
     }
   } catch (err) {}
 });
 
 ipcMain.handle("createDBEntry", (event, args) => {
   try {
-    if (!fs.existsSync("./public/data.db")) {
-      fs.writeFileSync("./public/data.db", "");
+    if (!fs.existsSync(homedir() + "/.safepass/data.db")) {
+      fs.mkdirSync(homedir() + "/.safepass");
+      fs.writeFileSync(homedir() + "/.safepass/data.db", "");
     }
-    const data = fs.readFileSync("./public/User.txt", "utf8");
+    const data = fs.readFileSync("./User.txt", "utf8");
     const cryptr = new Cryptr(data + args[args.length - 1]);
     const encryptedString = cryptr.encrypt(args[1]);
     args[1] = encryptedString;
-    const db = new sqlite.Database("./public/data.db");
+    const db = new sqlite.Database(homedir() + "/.safepass/data.db");
     const query = `INSERT INTO data (email,password,domain) VALUES ('${args[0]}','${args[1]}','${args[2]}')`;
     db.serialize(() => {
       db.run(
@@ -96,23 +97,31 @@ ipcMain.handle("createDBEntry", (event, args) => {
 });
 
 ipcMain.handle("getDB", (event, args) => {
+  let dataArr = [];
   try {
-    let dataArr = [];
-    const db = new sqlite.Database("./public/data.db");
+    const db = new sqlite.Database(homedir() + "/.safepass/data.db");
     db.serialize(() => {
       db.each("SELECT * FROM data", (err, row) => {
-        if (err) {
-          throw err;
-        }
-        dataArr.push(row.data);
+        dataArr.push(row);
       });
     });
-    db.close();
-    return {
-      status: "success",
-      data: dataArr
-    };
-  } catch (err) {
-    console.log(err);
-  }
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        db.close();
+        dataArr = dataArr.filter((item) =>
+          item.domain.includes(args.toLowerCase())
+        );
+        resolve(dataArr);
+      }, 3000);
+    });
+  } catch (err) {}
+});
+
+ipcMain.handle("getPassword", (event, args) => {
+  try {
+    const data = fs.readFileSync("./User.txt", "utf8");
+    const cryptr = new Cryptr(data + args[0]);
+    const decrypted = cryptr.decrypt(args[1]);
+    return decrypted;
+  } catch (err) {}
 });

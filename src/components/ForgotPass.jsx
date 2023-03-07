@@ -8,12 +8,16 @@ import { app } from "../firebase/firebase";
 function ForgotPass() {
   const [resetting, setResetting] = useState(false);
   function forgotHandler() {
-    setResetting(true);
     const auth = getAuth(app);
     const email = document.getElementById("email").value;
+    if (email !== "") {
+      setResetting(true);
+    } else {
+      toast.info("Please enter your email address!");
+    }
     sendPasswordResetEmail(auth, email)
       .then(() => {
-        setResetting(!resetting);
+        setResetting(false);
         toast.success(`Password reset link sent to ${email}`);
       })
       .catch((error) => {
@@ -70,18 +74,20 @@ function ForgotPass() {
                     </div>
                   </div>
                   <button
-                    type="submit"
+                    type="button"
                     className="py-3 px-4  rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600"
                     onClick={() => forgotHandler()}
                   >
                     {resetting ? (
-                      <RingLoader
-                        color={"white"}
-                        loading={resetting}
-                        size={20}
-                        aria-label="Loading Spinner"
-                        data-testid="loader"
-                      />
+                      <div className="w-full flex justify-center">
+                        <RingLoader
+                          color={"white"}
+                          loading={resetting}
+                          size={20}
+                          aria-label="Loading Spinner"
+                          data-testid="loader"
+                        />
+                      </div>
                     ) : (
                       <>Reset Password</>
                     )}
