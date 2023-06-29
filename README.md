@@ -1,6 +1,10 @@
-# SafePass
+# SafePass | Password Manager
 
-A password Manager
+![BlogImage-secure-password-resets-PG-77076 jpg optimal](https://github.com/shuklaritvik06/SafePass/assets/72812470/892a7147-74c7-441a-a6e9-fa1a1bc38d51)
+
+Welcome to SafePass, a secure and user-friendly password manager designed to keep your digital credentials safe and easily accessible. With SafePass, you can store and manage all your passwords in one central location, ensuring strong security while providing convenient access to your accounts.
+
+## Screenshots
 
 ![Screenshot from 2023-03-07 01-16-31](https://user-images.githubusercontent.com/72812470/223429469-fef410e1-658d-43e2-9569-1e5f74022317.png)
 ![Screenshot from 2023-03-07 01-16-39](https://user-images.githubusercontent.com/72812470/223429481-29e25748-0f7c-493c-a357-6e84dfa580b8.png)
